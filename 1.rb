@@ -3,6 +3,7 @@ require "gtk3"
 require 'sqlite3'
 require "nokogiri"
 require "Base64"
+require "find"
 ScreenX,ScreenY=1200,800
 
 
@@ -86,7 +87,23 @@ def updatelist (liststore,database,query)
     end
   end
 
+def onClickButtonRescan (par_win)
 
+open_dialog = Gtk::FileChooserDialog.new(:title =>'Pick File',:parent => par_win,:action => :select_folder,
+ :buttons => [[Gtk::Stock::OPEN, Gtk::ResponseType::ACCEPT],
+				     [Gtk::Stock::CANCEL, Gtk::ResponseType::CANCEL]])
+
+			     
+if open_dialog.run == Gtk::ResponseType::ACCEPT
+  puts "filename = #{open_dialog.filename}"
+  puts "uri = #{open_dialog.uri}"
+  open_dialog.close;
+else
+open_dialog.close;
+end	
+
+	     
+end
 
   Gtk.init
 
@@ -273,12 +290,13 @@ event_box1.add(image);
     ButtonRescan=Gtk::Button.new();
     ButtonRescan.set_label('Rescan Library');
     ButtonRescan.set_relief('none');
-  ButtonRescan.signal_connect('clicked') {} #,sub{$dbh.do("Delete from books");$liststore.clear();$add=0; &onClickButtonRescan;});
+  ButtonRescan.signal_connect('clicked') {add=0; onClickButtonRescan(window);} 
+#,sub{$dbh.do("Delete from books");$liststore.clear();});
 
   ButtonAdd=Gtk::Button.new();
   ButtonAdd.set_label('Add new folder');
   ButtonAdd.set_relief('none');
-  ButtonAdd.signal_connect('clicked') {add=1;onClickButtonRescan=true}
+  ButtonAdd.signal_connect('clicked') {add=1;onClickButtonRescan}
 
   ButtonPrev=Gtk::Button.new();
   ButtonPrev.set_label('Prev');
