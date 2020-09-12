@@ -4,7 +4,7 @@ require 'sqlite3'
 require "nokogiri"
 require "Base64"
 require "find"
-ScreenX,ScreenY=1200,800
+ScreenX,ScreenY=1400,1100
 
 
 
@@ -106,7 +106,6 @@ end
 end
 
   Gtk.init
-
 
 
 
