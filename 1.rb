@@ -69,9 +69,9 @@ end
 def updatelist (liststore,database,query)
 
   queryString="select distinct * from books where (Author like '%"+query+"%'
-  or  Name like '%"+query+"%'
-  or  Genre like '%"+query+"%'
-  or  Filename like '%"+query+"%')"
+or  Name like '%"+query+"%'
+or  Genre like '%"+query+"%'
+or  Filename like '%"+query+"%')"
   result=database.query(queryString)
   liststore.clear;
   while (first_result = result.next) do
@@ -87,23 +87,23 @@ def updatelist (liststore,database,query)
     end
   end
 
-def onClickButtonRescan (par_win)
+  def onClickButtonRescan (par_win)
 
-open_dialog = Gtk::FileChooserDialog.new(:title =>'Pick File',:parent => par_win,:action => :select_folder,
- :buttons => [[Gtk::Stock::OPEN, Gtk::ResponseType::ACCEPT],
-				     [Gtk::Stock::CANCEL, Gtk::ResponseType::CANCEL]])
+    open_dialog = Gtk::FileChooserDialog.new(:title =>'Pick File',:parent => par_win,:action => :select_folder,
+                                             :buttons => [[Gtk::Stock::OPEN, Gtk::ResponseType::ACCEPT],
+                                                          [Gtk::Stock::CANCEL, Gtk::ResponseType::CANCEL]])
 
-			     
-if open_dialog.run == Gtk::ResponseType::ACCEPT
-  puts "filename = #{open_dialog.filename}"
-  puts "uri = #{open_dialog.uri}"
-  open_dialog.close;
-else
-open_dialog.close;
-end	
 
-	     
-end
+    if open_dialog.run == Gtk::ResponseType::ACCEPT
+      puts "filename = #{open_dialog.filename}"
+      puts "uri = #{open_dialog.uri}"
+      open_dialog.close;
+    else
+      open_dialog.close;
+    end
+
+
+  end
 
   Gtk.init
 
@@ -225,18 +225,18 @@ end
     event_box.signal_connect('button-press-event') { |widgent,event|
       #Обработка рейтинга
       width1=(ScreenX-180)/2-20;
-    x0=(width1-500)/2;
+x0=(width1-500)/2;
       first_x=((event.x-x0)/100+1);
-    rate=sprintf("%d",first_x).to_i;
-    rate=5 if rate>5
-    rate=0 if rate<0;
-    imageRate.set_from_file("Rate"+rate.to_s+".png");
-  # updateBD(database,num,column,record)
-  # my $query_string="update books set read=1, rating=".$rate." where Id=".$model->get_value($iter,0);
-  select1=list_of_books.selection
-  iter=select1.selected
-  liststore.set_value(iter,7,rate);
-  liststore.set_value(iter,5,1);
+rate=sprintf("%d",first_x).to_i;
+rate=5 if rate>5
+rate=0 if rate<0;
+imageRate.set_from_file("Rate"+rate.to_s+".png");
+# updateBD(database,num,column,record)
+# my $query_string="update books set read=1, rating=".$rate." where Id=".$model->get_value($iter,0);
+select1=list_of_books.selection
+iter=select1.selected
+liststore.set_value(iter,7,rate);
+liststore.set_value(iter,5,1);
 }
 event_box.add(imageRate);
 
@@ -244,120 +244,136 @@ event_box1=Gtk::EventBox.new();
 event_box1.signal_connect('button-press-event') {onMouseClickImage=true};
 event_box1.add(image);
 
-  ##~ $imageRate.signal_connect('button-press-event',sub{print "Click"});
+##~ $imageRate.signal_connect('button-press-event',sub{print "Click"});
 
-  labelpage=Gtk::Label.new();
-  labelpage.set_markup('<b>1</b> of <b>1</b>');
-  labelpage.set_justify('center');
-  labelpage.set_line_wrap(false);
-
-
-  textBook=Gtk::TextView.new();
-  bufferBook=Gtk::TextBuffer.new();
-  Tag_bold=bufferBook.create_tag("bold",:weight=>1000);
-  Tag_center=bufferBook.create_tag("center",:justification=>'center');
-  Tag_left=bufferBook.create_tag("left",:justification=>'left');
-  Tag_backcolor=bufferBook.create_tag("backcolor",:background=>'yellow');
-  Tag_size_big=bufferBook.create_tag("sizebig",:size=>28);
-  Tag_size=bufferBook.create_tag("size",:size=>16);
-
-  textBook.set_buffer(bufferBook);
-  textBook.set_wrap_mode('word');
-  textBook.set_left_margin(20);
-  textBook.set_right_margin(20);
-  textBook.set_editable(false);
-  textBook.set_cursor_visible(false);
-
-  scrollwindowTextBook=Gtk::ScrolledWindow.new();
-  scrollwindowTextBook.set_min_content_height(ScreenY-550);#  1050=>600
-  scrollwindowTextBook.set_policy('automatic','automatic');
-  scrollwindowTextBook.add(textBook);
-  ##~ $scro llwindowTextBook.set_max_content_width(600);
+labelpage=Gtk::Label.new();
+labelpage.set_markup('<b>1</b> of <b>1</b>');
+labelpage.set_justify('center');
+labelpage.set_line_wrap(false);
 
 
+textBook=Gtk::TextView.new();
+bufferBook=Gtk::TextBuffer.new();
+Tag_bold=bufferBook.create_tag("bold",:weight=>1000);
+Tag_center=bufferBook.create_tag("center",:justification=>'center');
+Tag_left=bufferBook.create_tag("left",:justification=>'left');
+Tag_backcolor=bufferBook.create_tag("backcolor",:background=>'yellow');
+Tag_size_big=bufferBook.create_tag("sizebig",:size=>28);
+Tag_size=bufferBook.create_tag("size",:size=>16);
+
+textBook.set_buffer(bufferBook);
+textBook.set_wrap_mode('word');
+textBook.set_left_margin(20);
+textBook.set_right_margin(20);
+textBook.set_editable(false);
+textBook.set_cursor_visible(false);
+
+scrollwindowTextBook=Gtk::ScrolledWindow.new();
+scrollwindowTextBook.set_min_content_height(ScreenY-550);#  1050=>600
+scrollwindowTextBook.set_policy('automatic','automatic');
+scrollwindowTextBook.add(textBook);
+##~ $scro llwindowTextBook.set_max_content_width(600);
 
 
-    #OPen file fb2
-    list_of_books.signal_connect('row-activated') { |treeview,sel_path,column|
-      model = treeview.model
-      path = sel_path
-      iter = model.get_iter(path)
-     ReadInfoBook(root_dir+iter[6],bufferBook,image,labelpage);
-     imageRate.set_from_file("Rate"+iter[7].to_s+".png");
-    }
 
-    ButtonRescan=Gtk::Button.new();
-    ButtonRescan.set_label('Rescan Library');
-    ButtonRescan.set_relief('none');
-  ButtonRescan.signal_connect('clicked') {add=0; onClickButtonRescan(window);} 
+
+#OPen file fb2
+
+   # when a row of the treeview is selected, it emits a signal
+        # self.selection = view.get_selection()
+        # self.selection.connect("changed", self.on_changed)
+
+select1=list_of_books.selection
+select1.signal_connect("changed"){|treeselection|
+
+
+
+ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage);
+imageRate.set_from_file("Rate"+liststore.get_value(treeselection.selected,7).to_s+".png");
+}	
+
+
+
+# list_of_books.signal_connect('row-activated') { |treeview,sel_path,column|
+# model = treeview.model
+# path = sel_path
+# iter = model.get_iter(path)
+# ReadInfoBook(root_dir+iter[6],bufferBook,image,labelpage);
+# imageRate.set_from_file("Rate"+iter[7].to_s+".png");
+# }
+
+ButtonRescan=Gtk::Button.new();
+ButtonRescan.set_label('Rescan Library');
+ButtonRescan.set_relief('none');
+ButtonRescan.signal_connect('clicked') {add=0; onClickButtonRescan(window);} 
 #,sub{$dbh.do("Delete from books");$liststore.clear();});
 
-  ButtonAdd=Gtk::Button.new();
-  ButtonAdd.set_label('Add new folder');
-  ButtonAdd.set_relief('none');
-  ButtonAdd.signal_connect('clicked') {add=1;onClickButtonRescan}
+ButtonAdd=Gtk::Button.new();
+ButtonAdd.set_label('Add new folder');
+ButtonAdd.set_relief('none');
+ButtonAdd.signal_connect('clicked') {add=1;onClickButtonRescan}
 
-  ButtonPrev=Gtk::Button.new();
-  ButtonPrev.set_label('Prev');
-  ButtonPrev.set_relief('none');
-  ButtonPrev.signal_connect('clicked') {
-    labeltext=labelpage.text
-    cur_page=labeltext[/((.)*) of /,1]
-    max_page=labeltext[/of ((.)*)/,1]
-    c=cur_page.to_i
-    m=max_page.to_i
-    if c>1 then c-=1 else c=m end
-      cur_page=c.to_s
-      labelpage.set_markup('<b>'+cur_page.to_s+'</b> of <b>'+max_page+'</b>');
-      treeselection=list_of_books.selection
-      if treeselection.selected[6]
-        ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage,c);
-      end
+ButtonPrev=Gtk::Button.new();
+ButtonPrev.set_label('Prev');
+ButtonPrev.set_relief('none');
+ButtonPrev.signal_connect('clicked') {
+labeltext=labelpage.text
+cur_page=labeltext[/((.)*) of /,1]
+max_page=labeltext[/of ((.)*)/,1]
+c=cur_page.to_i
+m=max_page.to_i
+if c>1 then c-=1 else c=m end
+cur_page=c.to_s
+labelpage.set_markup('<b>'+cur_page.to_s+'</b> of <b>'+max_page+'</b>');
+treeselection=list_of_books.selection
+if treeselection.selected[6]
+ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage,c);
+end
 
-    };
+};
 
-    ButtonNext=Gtk::Button.new();
-    ButtonNext.set_label('Next');
-    ButtonNext.set_relief('none');
+ButtonNext=Gtk::Button.new();
+ButtonNext.set_label('Next');
+ButtonNext.set_relief('none');
 
-    ButtonNext.signal_connect('clicked') {
-      labeltext=labelpage.text
-      cur_page=labeltext[/((.)*) of /,1]
-      max_page=labeltext[/of ((.)*)/,1]
-      c=cur_page.to_i
-      m=max_page.to_i
-      if c<m then c+=1 else c=1 end
-        cur_page=c.to_s
-        labelpage.set_markup('<b>'+cur_page.to_s+'</b> of <b>'+max_page+'</b>');
-        treeselection=list_of_books.selection
-        if treeselection.selected[6]
-          ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage,c);
-        end
-      }
-
-
+ButtonNext.signal_connect('clicked') {
+labeltext=labelpage.text
+cur_page=labeltext[/((.)*) of /,1]
+max_page=labeltext[/of ((.)*)/,1]
+c=cur_page.to_i
+m=max_page.to_i
+if c<m then c+=1 else c=1 end
+cur_page=c.to_s
+labelpage.set_markup('<b>'+cur_page.to_s+'</b> of <b>'+max_page+'</b>');
+treeselection=list_of_books.selection
+if treeselection.selected[6]
+ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage,c);
+end
+}
 
 
 
 
-  ##~ gtk.STATE_NORMAL
-  ##~ State during normal operation.
 
-  ##~ gtk.STATE_ACTIVE
-  ##~ State of a currently active widget, such as a depressed button.
 
-  ##~ gtk.STATE_PRELIGHT
-  ##~ State indicating that the mouse pointer is over the widget and the widget will respond to mouse clicks.
+##~ gtk.STATE_NORMAL
+##~ State during normal operation.
 
-  ##~ gtk.STATE_SELECTED
-  ##~ State of a selected item, such the selected row in a list.
+##~ gtk.STATE_ACTIVE
+##~ State of a currently active widget, such as a depressed button.
 
-  ##~ gtk.STATE_INSENSITIVE
-  ##~ State indicating that the widget is unresponsive to user actions.
+##~ gtk.STATE_PRELIGHT
+##~ State indicating that the mouse pointer is over the widget and the widget will respond to mouse clicks.
 
-  #~ switch.modify_bg('normal',Gtk::Gdk::Color.new (:red=>0,:green=>0,:blue=>65535));
-  #~ switch.modify_fg('normal',Gtk::Gdk::Color.new ("red"=>65000,"green"=>65535,"blue"=>65535));
-  #~ color=Gtk::Gdk::color_parse('#742A2A');
+##~ gtk.STATE_SELECTED
+##~ State of a selected item, such the selected row in a list.
+
+##~ gtk.STATE_INSENSITIVE
+##~ State indicating that the widget is unresponsive to user actions.
+
+#~ switch.modify_bg('normal',Gtk::Gdk::Color.new (:red=>0,:green=>0,:blue=>65535));
+#~ switch.modify_fg('normal',Gtk::Gdk::Color.new ("red"=>65000,"green"=>65535,"blue"=>65535));
+#~ color=Gtk::Gdk::color_parse('#742A2A');
                #$switch.modify_fg('prelight',$color);
 
                hboxbutton1=Gtk::Box.new('horizontal',20);
@@ -397,11 +413,5 @@ event_box1.add(image);
                ##ADD data DB from file
 
                updatelist(liststore,db,"")
-
-
-
-
-
-
 
                Gtk.main
