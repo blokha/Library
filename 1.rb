@@ -4,39 +4,20 @@ require 'sqlite3'
 require "nokogiri"
 require "Base64"
 require "find"
-ScreenX,ScreenY=1400,1100
+ScreenX,ScreenY=1400,1050
 
 
 
 def ReadInfoBook (fb2_filename, bufferBook, image1,labelpage,pagenum=1)
-
+print "Readinfobook #{fb2_filename}\n"
   unless (File.exist?(fb2_filename))
     bufferBook.text="File not find";
-
     labelpage.set_markup('<b>0</b> of <b>0</b>');
     return 1
   end
-  doc=Nokogiri::XML(open(fb2_filename))
-  if  doc.css("title-info author last-name").first then  l_name = doc.css("title-info author last-name").first.content end
-  if  doc.css("title-info author first-name").first then  f_name = doc.css("title-info author first-name").first.content end
-  if  doc.css("title-info author middle-name").first then  m_name = doc.css("title-info author middle-name").first.content end
-  if  doc.css("title-info genre").first
-    genres=""
-    doc.css("title-info genre").each do |genre|
-      genres+=genre.content+" "
-    end
-  end
-  if  doc.css("title-info book-title").first then  b_title = doc.css("title-info book-title").first.content end
-  if  doc.css("title-info annotation").first then  annotation = doc.css("title-info annotation").first.content end
-  if  doc.css("title-info date").first then  b_date = doc.css("title-info date").first.content end
-  bufferBook.text="";
 
-  bufferBook.insert(bufferBook.start_iter,sprintf("%s %s %s \n",f_name,m_name,l_name),options={:tags=>[Tag_center,Tag_bold,Tag_size_big]});
-  bufferBook.insert(bufferBook.end_iter,sprintf("%s \n %s \n\n",b_title,b_date),options={:tags=>[Tag_center,Tag_bold,Tag_size_big]});
-  bufferBook.insert(bufferBook.end_iter,"Аннотация \n",options={:tags=>[Tag_center,Tag_bold,Tag_backcolor,Tag_size_big]});
-  bufferBook.insert(bufferBook.end_iter,annotation,options={:tags=>[Tag_left,Tag_size] });
-  bufferBook.insert(bufferBook.end_iter,"Путь к файлу \n\n",options={:tags=>[Tag_center,Tag_bold,Tag_backcolor]});
-  bufferBook.insert(bufferBook.end_iter,fb2_filename,options={:tags=>[Tag_left]});
+  doc=Nokogiri::XML(open(fb2_filename))
+
   if  doc.css("binary").first
     loader = GdkPixbuf::PixbufLoader.new()
     binary = Base64.decode64(doc.css("binary")[pagenum-1].content);
@@ -46,7 +27,7 @@ def ReadInfoBook (fb2_filename, bufferBook, image1,labelpage,pagenum=1)
     # binary_from_frb = doc.css("binary").first.content
     h = pixbuf.height
     w = pixbuf.width
-    w_pb=h_pb=ScreenY-450;
+    w_pb=h_pb=ScreenY-530;
     if (w>h)
       h_pb=h*w_pb/w
     else
@@ -54,8 +35,34 @@ def ReadInfoBook (fb2_filename, bufferBook, image1,labelpage,pagenum=1)
     end
     image1.pixbuf=pixbuf.scale(w_pb,h_pb)
     max=doc.css("binary").size
-    labelpage.set_markup('<b>'+pagenum.to_s+'</b> of <b>'+max.to_s+'</b>');
+    labelpage.set_markup('<b>'+pagenum.to_s+'</b> of <b>'+max.to_s+'</b>') if max
+  else
+  	no_image=GdkPixbuf::Pixbuf.new(:file=>"nophoto1.jpg")
+  	image1.pixbuf=no_image
   end
+  return 0 if pagenum>1
+  if  doc.css("title-info author last-name").first then  l_name = doc.css("title-info author last-name").first.content else l_name="" end
+  if  doc.css("title-info author first-name").first then  f_name = doc.css("title-info author first-name").first.content else f_name="" end
+  if  doc.css("title-info author middle-name").first then  m_name = doc.css("title-info author middle-name").first.content else m_name="" end
+  genres=""
+  if  doc.css("title-info genre").first
+    doc.css("title-info genre").each do |genre|
+      genres+=genre.content+" "
+    end
+  end
+  if  doc.css("title-info book-title").first then  b_title = doc.css("title-info book-title").first.content else b_title="" end
+  if  doc.css("title-info annotation").first then  annotation = doc.css("title-info annotation").first.content else annotation="" end
+  if  doc.css("title-info date").first then  b_date = doc.css("title-info date").first.content else b_date="" end
+  bufferBook.text="";
+
+  bufferBook.insert(bufferBook.start_iter,sprintf("%s %s %s \n",f_name,m_name,l_name),options={:tags=>[Tag_center,Tag_bold,Tag_size_big]});
+  bufferBook.insert(bufferBook.end_iter,sprintf("%s \n %s \n\n",b_title,b_date),options={:tags=>[Tag_center,Tag_bold,Tag_size_big]});
+  bufferBook.insert(bufferBook.end_iter,"Аннотация \n",options={:tags=>[Tag_center,Tag_bold,Tag_backcolor,Tag_size_big]});
+  bufferBook.insert(bufferBook.end_iter,annotation,options={:tags=>[Tag_left,Tag_size] });
+  bufferBook.insert(bufferBook.end_iter,"Путь к файлу \n\n",options={:tags=>[Tag_center,Tag_bold,Tag_backcolor]});
+  bufferBook.insert(bufferBook.end_iter,fb2_filename,options={:tags=>[Tag_left]});
+
+  
 end
 
 def updateBD(database,num,column,record)
@@ -148,9 +155,12 @@ or  Filename like '%"+query+"%')"
   list_of_books=Gtk::TreeView.new(liststore)
   list_of_books.columns_autosize
   find = Gtk::Entry.new();
+  cancan=0
   find.signal_connect("activate") {
+    cancan=nil
     list_of_books.selection.unselect_all;
     updatelist(liststore,db,find.text)
+    cancan=1
   };
   for i  in 0...$columns_size do
       ##Reads column
@@ -218,7 +228,7 @@ or  Filename like '%"+query+"%')"
     image=Gtk::Image.new();
 
     imageRate=Gtk::Image.new();
-    imageRate.set_from_file("Rate.png");
+    imageRate.set_from_file("Rate0.png");
 
 
     event_box=Gtk::EventBox.new();
@@ -269,7 +279,8 @@ textBook.set_editable(false);
 textBook.set_cursor_visible(false);
 
 scrollwindowTextBook=Gtk::ScrolledWindow.new();
-scrollwindowTextBook.set_min_content_height(ScreenY-550);#  1050=>600
+scrollwindowTextBook.set_min_content_height(ScreenY-600);#  1050=>600
+scrollwindowTextBook.set_max_content_height(ScreenY-600);#  1050=>600
 scrollwindowTextBook.set_policy('automatic','automatic');
 scrollwindowTextBook.add(textBook);
 ##~ $scro llwindowTextBook.set_max_content_width(600);
@@ -285,11 +296,11 @@ scrollwindowTextBook.add(textBook);
 
 select1=list_of_books.selection
 select1.signal_connect("changed"){|treeselection|
-
-
-
+if (treeselection.selected && cancan)
+	print "select 1\n"
 ReadInfoBook(root_dir+liststore.get_value(treeselection.selected,6),bufferBook,image,labelpage);
 imageRate.set_from_file("Rate"+liststore.get_value(treeselection.selected,7).to_s+".png");
+end
 }	
 
 
